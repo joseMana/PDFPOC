@@ -31,8 +31,6 @@ class Program
             pdfDocument.PageSettings.Size = PdfPageSize.A2;
             PdfPage currentPage = pdfDocument.Pages.Add();
             pdfDocument.PageSettings.Margins.Top = 800;
-
-
             pdfDocument.FileStructure.IncrementalUpdate = false;
             pdfDocument.FileStructure.EnableTrailerId = true;
 
@@ -61,8 +59,10 @@ class Program
 
             var invoiceText = new PdfTextElement("Invoice No: AZH-195\nInvoice Date: 10/21/2024\nNet Payment Terms: 45\nDue Date: 12/05/2024", Font);
             invoiceText.StringFormat = new PdfStringFormat(PdfTextAlignment.Right);
-
             PdfLayoutResult invoiceResult = invoiceText.Draw(currentPage, new PointF(rightMargin, 13 + 40));
+
+
+
             var pdfGrid = new PdfGrid();
             var data = GetInvoiceData();
             Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
@@ -79,218 +79,215 @@ class Program
             pdfGrid.Style.HorizontalOverflowType = PdfHorizontalOverflowType.NextPage;
 
 
-            Type type = result.GetType();
-            PropertyInfo[] properties = type.GetProperties();
+            //Type type = result.GetType();
+            //PropertyInfo[] properties = type.GetProperties();
 
-            for (int i = 0; i < properties.Length; i++)
-            {
-                var displayNameAttribute = properties[i].GetCustomAttribute<DisplayNameAttribute>();
-                string headerDisplayName = displayNameAttribute?.DisplayName ?? properties[i].Name;
+            //for (int i = 0; i < properties.Length; i++)
+            //{
+            //    var displayNameAttribute = properties[i].GetCustomAttribute<DisplayNameAttribute>();
+            //    string headerDisplayName = displayNameAttribute?.DisplayName ?? properties[i].Name;
 
-                pdfgridheader.Cells[i].Value = headerDisplayName;
-                pdfgridheader.Cells[i].StringFormat = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Top);
-                pdfgridheader.Cells[i].Style.TextBrush = PdfBrushes.White;
-                pdfgridheader.Cells[i].Style.Borders.All = new PdfPen(new PdfColor(255, 255, 255), 1.5f);
-            }
+            //    pdfgridheader.Cells[i].Value = headerDisplayName;
+            //    pdfgridheader.Cells[i].StringFormat = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Top);
+            //    pdfgridheader.Cells[i].Style.TextBrush = PdfBrushes.White;
+            //    pdfgridheader.Cells[i].Style.Borders.All = new PdfPen(new PdfColor(255, 255, 255), 1.5f);
+            //}
 
-            PdfGridRow pdfgridheader1 = pdfGrid.Headers[1];
-            pdfgridheader1.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Bold);
-            pdfgridheader1.Style.BackgroundBrush = PdfBrushes.LightGray;
-            pdfGrid.Style.CellPadding = new PdfPaddings(4, 2, 8, 0);
-            pdfGrid.Style.HorizontalOverflowType = PdfHorizontalOverflowType.NextPage;
+            //PdfGridRow pdfgridheader1 = pdfGrid.Headers[1];
+            //pdfgridheader1.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Bold);
+            //pdfgridheader1.Style.BackgroundBrush = PdfBrushes.LightGray;
+            //pdfGrid.Style.CellPadding = new PdfPaddings(4, 2, 8, 0);
+            //pdfGrid.Style.HorizontalOverflowType = PdfHorizontalOverflowType.NextPage;
 
-            for (int i = 0; i < properties.Length; i++)
-            {
-                var displayNameAttribute = properties[i].GetCustomAttribute<DisplayNameAttribute>();
-                string headerDisplayName = displayNameAttribute?.DisplayName ?? properties[i].Name;
+            //for (int i = 0; i < properties.Length; i++)
+            //{
+            //    var displayNameAttribute = properties[i].GetCustomAttribute<DisplayNameAttribute>();
+            //    string headerDisplayName = displayNameAttribute?.DisplayName ?? properties[i].Name;
 
-                pdfgridheader1.Cells[i].Value = headerDisplayName;
-                pdfgridheader1.Cells[i].StringFormat = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
-                pdfgridheader1.Cells[i].Style.Borders.All = darkBorderPen;
-            }
+            //    pdfgridheader1.Cells[i].Value = headerDisplayName;
+            //    pdfgridheader1.Cells[i].StringFormat = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
+            //    pdfgridheader1.Cells[i].Style.Borders.All = darkBorderPen;
+            //}
 
-            decimal totalvalue = 0;
-            foreach (var rowData in data)
-            {
-                PdfGridRow row = pdfGrid.Rows.Add();
-                row.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
-                row.Style.BackgroundBrush = PdfBrushes.White;
-                Type types = rowData.GetType();
-                PropertyInfo[] property = type.GetProperties();
-                PdfStringFormat fort = new PdfStringFormat();
-                fort.WordWrap = PdfWordWrapType.Word;
+            //decimal totalvalue = 0;
+            //foreach (var rowData in data)
+            //{
+            //    PdfGridRow row = pdfGrid.Rows.Add();
+            //    row.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
+            //    row.Style.BackgroundBrush = PdfBrushes.White;
+            //    Type types = rowData.GetType();
+            //    PropertyInfo[] property = type.GetProperties();
+            //    PdfStringFormat fort = new PdfStringFormat();
+            //    fort.WordWrap = PdfWordWrapType.Word;
 
-                Console.WriteLine($"{pdfDocument.Pages.Count} inside for");
+            //    Console.WriteLine($"{pdfDocument.Pages.Count} inside for");
 
-                for (int i = 0; i < property.Length; i++)
-                {
-                    var value = property[i].GetValue(rowData);
-                    if (property[i].Name == "Total" || property[i].Name == "BillRate")
-                    {
-                        totalvalue += property[i].Name == "Total" ? value as decimal? ?? Convert.ToDecimal(value ?? 0) : 0;
-                        row.Cells[i].Value = $"${value?.ToString()}" ?? string.Empty;
-                        row.Cells[i].StringFormat = fort;
+            //    for (int i = 0; i < property.Length; i++)
+            //    {
+            //        var value = property[i].GetValue(rowData);
+            //        if (property[i].Name == "Total" || property[i].Name == "BillRate")
+            //        {
+            //            totalvalue += property[i].Name == "Total" ? value as decimal? ?? Convert.ToDecimal(value ?? 0) : 0;
+            //            row.Cells[i].Value = $"${value?.ToString()}" ?? string.Empty;
+            //            row.Cells[i].StringFormat = fort;
 
-                    }
-                    else
-                    {
-                        row.Cells[i].Value = value?.ToString() ?? string.Empty;
-                        row.Cells[i].StringFormat = fort;
+            //        }
+            //        else
+            //        {
+            //            row.Cells[i].Value = value?.ToString() ?? string.Empty;
+            //            row.Cells[i].StringFormat = fort;
 
-                    }
-                    row.Cells[i].Style.Borders.All = darkBorderPen;
+            //        }
+            //        row.Cells[i].Style.Borders.All = darkBorderPen;
 
-                }
-            }
-            Console.WriteLine($"{pdfDocument.Pages.Count} after for");
-            PdfLayoutFormat layoutFormat = new PdfLayoutFormat
-            {
-                Break = PdfLayoutBreakType.FitPage,
-                Layout = PdfLayoutType.Paginate
-            };
+            //    }
+            //}
+            //Console.WriteLine($"{pdfDocument.Pages.Count} after for");
+            //PdfLayoutFormat layoutFormat = new PdfLayoutFormat
+            //{
+            //    Break = PdfLayoutBreakType.FitPage,
+            //    Layout = PdfLayoutType.Paginate
+            //};
 
-            PdfGridRow footerRow = pdfGrid.Rows.Add();
-            int totalColumns = pdfGrid.Columns.Count;
-            footerRow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 12, PdfFontStyle.Regular);
-            footerRow.Style.BackgroundBrush = PdfBrushes.White;
-            footerRow.Cells[0].ColumnSpan = totalColumns - 1;
-            footerRow.Cells[0].Value = "Invoice Amount:";
-            footerRow.Cells[0].Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 12, PdfFontStyle.Bold);
-            footerRow.Cells[0].StringFormat = new PdfStringFormat(PdfTextAlignment.Right);
-            footerRow.Cells[0].Style.CellPadding = new PdfPaddings(0, 5, 8, 5);
-            footerRow.Cells[0].Style.Borders.All = darkBorderPen;
-            footerRow.Cells[totalColumns - 1].Value = $"${totalvalue}";
-            footerRow.Cells[totalColumns - 1].Style.Borders.All = darkBorderPen;
+            //PdfGridRow footerRow = pdfGrid.Rows.Add();
+            //int totalColumns = pdfGrid.Columns.Count;
+            //footerRow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 12, PdfFontStyle.Regular);
+            //footerRow.Style.BackgroundBrush = PdfBrushes.White;
+            //footerRow.Cells[0].ColumnSpan = totalColumns - 1;
+            //footerRow.Cells[0].Value = "Invoice Amount:";
+            //footerRow.Cells[0].Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 12, PdfFontStyle.Bold);
+            //footerRow.Cells[0].StringFormat = new PdfStringFormat(PdfTextAlignment.Right);
+            //footerRow.Cells[0].Style.CellPadding = new PdfPaddings(0, 5, 8, 5);
+            //footerRow.Cells[0].Style.Borders.All = darkBorderPen;
+            //footerRow.Cells[totalColumns - 1].Value = $"${totalvalue}";
+            //footerRow.Cells[totalColumns - 1].Style.Borders.All = darkBorderPen;
 
-            pdfGrid.AllowRowBreakAcrossPages = true;
+            //pdfGrid.AllowRowBreakAcrossPages = true;
 
-            pdfGrid.RepeatHeader = true;
-
-
-            var pdfGridLayoutResult = pdfGrid.Draw(currentPage, new PointF(0, 310), layoutFormat);
-            pdfGrid.RepeatHeader = false;
-
-            var summarydata = GetSummaryData();
-            var summaryresult = summarydata.FirstOrDefault();
-            PdfGrid summaryHeaderGrid = new PdfGrid();
-            summaryHeaderGrid.Columns.Add(6);
-            summaryHeaderGrid.Headers.Add(2);
-            PdfGridRow summarygridheader = summaryHeaderGrid.Headers[0];
-            summarygridheader.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Bold);
-            summarygridheader.Style.BackgroundBrush = PdfBrushes.LightGray;
-            summaryHeaderGrid.Style.CellPadding = new PdfPaddings(4, 2, 8, 0);
-            summaryHeaderGrid.Style.HorizontalOverflowType = PdfHorizontalOverflowType.NextPage;
-            summarygridheader.Cells[0].Value = "Summary";
-            summarygridheader.Cells[0].Style.Font = headerFont;
-            summarygridheader.Cells[0].Style.BackgroundBrush = PdfBrushes.LightGray;
-            summarygridheader.Cells[0].Style.StringFormat = new PdfStringFormat(PdfTextAlignment.Center);
-            summarygridheader.Cells[0].ColumnSpan = 6;
-            PdfGridRow summarygridheader2 = summaryHeaderGrid.Headers[1];
-            summarygridheader2.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Bold);
-            summarygridheader2.Style.BackgroundBrush = PdfBrushes.LightGray;
-            summaryHeaderGrid.Style.CellPadding = new PdfPaddings(4, 2, 8, 0);
-            List<string> summaryheaderinfo = new List<string>() { "Location", "Department", "Skill", "Hours/Miles", "Total Amount", "Addl.Details" };
-            for (int i = 0; i < summaryheaderinfo.Count; i++)
-            {
-                summarygridheader2.Cells[i].Value = summaryheaderinfo[i];
-                summarygridheader2.Cells[i].StringFormat = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
-                summarygridheader2.Cells[i].Style.Borders.All = darkBorderPen;
-            }
-
-            List<string> summaryrowinfo = new List<string>() { "DepartmentName", "SkillName", "Value", "TotalAmount", "Addl.Details" };
+            //pdfGrid.RepeatHeader = true;
 
 
-            foreach (var summaryrowData in summarydata)
-            {
-                PdfGridRow summaryrow = summaryHeaderGrid.Rows.Add();
-                summaryrow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
-                summaryrow.Style.BackgroundBrush = PdfBrushes.White;
-                PdfStringFormat format = new PdfStringFormat();
-                format.WordWrap = PdfWordWrapType.Word;
-                summaryrow.Cells[0].Value = summaryrowData.LocationName;
-                summaryrow.Cells[0].StringFormat = format;
-                summaryrow.Cells[0].Style.Borders.All = darkBorderPen;
-                Dictionary<string, string> propertyValues = new Dictionary<string, string>();
+            //var pdfGridLayoutResult = pdfGrid.Draw(currentPage, new PointF(0, 310), layoutFormat);
+            //pdfGrid.RepeatHeader = false;
 
-                foreach (var sumdata in summaryrowData.Items)
-                {
-                    Type types = sumdata.GetType();
-                    PropertyInfo[] summaryProperties = types.GetProperties();
+            //var summarydata = GetSummaryData();
+            //var summaryresult = summarydata.FirstOrDefault();
+            //PdfGrid summaryHeaderGrid = new PdfGrid();
+            //summaryHeaderGrid.Columns.Add(6);
+            //summaryHeaderGrid.Headers.Add(2);
+            //PdfGridRow summarygridheader = summaryHeaderGrid.Headers[0];
+            //summarygridheader.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Bold);
+            //summarygridheader.Style.BackgroundBrush = PdfBrushes.LightGray;
+            //summaryHeaderGrid.Style.CellPadding = new PdfPaddings(4, 2, 8, 0);
+            //summaryHeaderGrid.Style.HorizontalOverflowType = PdfHorizontalOverflowType.NextPage;
+            //summarygridheader.Cells[0].Value = "Summary";
+            //summarygridheader.Cells[0].Style.Font = headerFont;
+            //summarygridheader.Cells[0].Style.BackgroundBrush = PdfBrushes.LightGray;
+            //summarygridheader.Cells[0].Style.StringFormat = new PdfStringFormat(PdfTextAlignment.Center);
+            //summarygridheader.Cells[0].ColumnSpan = 6;
+            //PdfGridRow summarygridheader2 = summaryHeaderGrid.Headers[1];
+            //summarygridheader2.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Bold);
+            //summarygridheader2.Style.BackgroundBrush = PdfBrushes.LightGray;
+            //summaryHeaderGrid.Style.CellPadding = new PdfPaddings(4, 2, 8, 0);
+            //List<string> summaryheaderinfo = new List<string>() { "Location", "Department", "Skill", "Hours/Miles", "Total Amount", "Addl.Details" };
+            //for (int i = 0; i < summaryheaderinfo.Count; i++)
+            //{
+            //    summarygridheader2.Cells[i].Value = summaryheaderinfo[i];
+            //    summarygridheader2.Cells[i].StringFormat = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
+            //    summarygridheader2.Cells[i].Style.Borders.All = darkBorderPen;
+            //}
 
-                    foreach (var property in summaryProperties)
-                    {
-                        object value = property.GetValue(sumdata);
-                        propertyValues[property.Name] = value?.ToString() ?? string.Empty;
-                    }
-                    for (int i = 1; i <= summaryrowinfo.Count; i++)
-                    {
-                        string columnKey = summaryrowinfo[i - 1];// Adjust index since summaryrowinfo is 0-based
-
-                        if (propertyValues.TryGetValue(columnKey, out string columnValue))
-                        {
-                            summaryrow.Cells[i].Value = columnValue;
-                        }
-                        else if (columnKey == "Addl.Details")
-                        {
-                            summaryrow.Cells[i].Value = $"{propertyValues["LocationIExternalId"]}-{propertyValues["DepartmentName"]}-{propertyValues["SkillGLNumber"]}";
-                        }
-
-                        summaryrow.Cells[i].StringFormat = format;
-                        summaryrow.Cells[i].Style.Borders.All = darkBorderPen;
-                        if (summaryrowinfo.Count - 1 == i)
-                        {
-                            summaryrow = summaryHeaderGrid.Rows.Add();
-                        }
-                    }
+            //List<string> summaryrowinfo = new List<string>() { "DepartmentName", "SkillName", "Value", "TotalAmount", "Addl.Details" };
 
 
-                }
+            //foreach (var summaryrowData in summarydata)
+            //{
+            //    PdfGridRow summaryrow = summaryHeaderGrid.Rows.Add();
+            //    summaryrow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
+            //    summaryrow.Style.BackgroundBrush = PdfBrushes.White;
+            //    PdfStringFormat format = new PdfStringFormat();
+            //    format.WordWrap = PdfWordWrapType.Word;
+            //    summaryrow.Cells[0].Value = summaryrowData.LocationName;
+            //    summaryrow.Cells[0].StringFormat = format;
+            //    summaryrow.Cells[0].Style.Borders.All = darkBorderPen;
+            //    Dictionary<string, string> propertyValues = new Dictionary<string, string>();
 
-            }
+            //    foreach (var sumdata in summaryrowData.Items)
+            //    {
+            //        Type types = sumdata.GetType();
+            //        PropertyInfo[] summaryProperties = types.GetProperties();
 
-            summaryHeaderGrid.Draw(pdfDocument.Pages[pdfDocument.Pages.Count - 1], new PointF(0, pdfGridLayoutResult.Bounds.Bottom + 40));
-            Console.WriteLine($"{pdfDocument.Pages.Count} after draw");
+            //        foreach (var property in summaryProperties)
+            //        {
+            //            object value = property.GetValue(sumdata);
+            //            propertyValues[property.Name] = value?.ToString() ?? string.Empty;
+            //        }
+            //        for (int i = 1; i <= summaryrowinfo.Count; i++)
+            //        {
+            //            string columnKey = summaryrowinfo[i - 1];// Adjust index since summaryrowinfo is 0-based
+
+            //            if (propertyValues.TryGetValue(columnKey, out string columnValue))
+            //            {
+            //                summaryrow.Cells[i].Value = columnValue;
+            //            }
+            //            else if (columnKey == "Addl.Details")
+            //            {
+            //                summaryrow.Cells[i].Value = $"{propertyValues["LocationIExternalId"]}-{propertyValues["DepartmentName"]}-{propertyValues["SkillGLNumber"]}";
+            //            }
+
+            //            summaryrow.Cells[i].StringFormat = format;
+            //            summaryrow.Cells[i].Style.Borders.All = darkBorderPen;
+            //            if (summaryrowinfo.Count - 1 == i)
+            //            {
+            //                summaryrow = summaryHeaderGrid.Rows.Add();
+            //            }
+            //        }
 
 
-            foreach (PdfPage page in pdfDocument.Pages)
-            {
+            //    }
 
-                PdfGraphics pageGraphics = page.Graphics;
+            //}
 
-                RectangleF bounds = new RectangleF(0, 0, page.GetClientSize().Width, 50);
-                PdfPageTemplateElement header = new PdfPageTemplateElement(bounds);
-
-                var stream = Logo();
-                PdfImage image = new PdfBitmap(stream);
+            //summaryHeaderGrid.Draw(pdfDocument.Pages[pdfDocument.Pages.Count - 1], new PointF(0, pdfGridLayoutResult.Bounds.Bottom + 40));
+            //Console.WriteLine($"{pdfDocument.Pages.Count} after draw");
 
 
-                SizeF iconSize = new SizeF(120, 33);
-                PointF iconLocation = new PointF(14, 13);
-                pdfDocument.Template.Top = header;
-                pageGraphics.DrawImage(image, new PointF(0, 0), iconSize);
-                stream.Dispose();
+            //foreach (PdfPage page in pdfDocument.Pages)
+            //{
+            //    PdfGraphics pageGraphics = page.Graphics;
 
+            //    RectangleF bounds = new RectangleF(0, 0, page.GetClientSize().Width, 50);
+            //    PdfPageTemplateElement header = new PdfPageTemplateElement(bounds);
 
-                PdfPageTemplateElement footer = new PdfPageTemplateElement(bounds);
-                PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
-                PdfBrush brush = new PdfSolidBrush(Color.Black);
-                PdfPageNumberField pageNumber = new PdfPageNumberField(font, brush);
-                PdfPageCountField counts = new PdfPageCountField(font, brush);
-                PdfCompositeField pageText = new PdfCompositeField(font, brush, "Page {0} of {1}", pageNumber, counts);
-                pageText.Bounds = footer.Bounds;
-                PdfCompositeField date = new PdfCompositeField(font, brush, $"Date : {DateTime.UtcNow.Date.ToString("dd/MM/yyyy")}");
-                date.Bounds = footer.Bounds;
-                PdfCompositeField copyRights = new PdfCompositeField(font, brush, $"©{DateTime.UtcNow.Year} Copyright Reserved by Einstein ll");
-                copyRights.Bounds = footer.Bounds;
-                pageText.Draw(footer.Graphics, new PointF(1035, 37));
-                date.Draw(footer.Graphics, new PointF(15, 37));
-                copyRights.Draw(footer.Graphics, new PointF(500, 37));
-                pdfDocument.Template.Bottom = footer;
-            }
-            if (pdfDocument.Pages.Count == 0)
-            {
-                throw new InvalidOperationException("No pages available in the PDF document.");
-            }
+            //    var stream = Logo();
+            //    PdfImage image = new PdfBitmap(stream);
+
+            //    SizeF iconSize = new SizeF(120, 33);
+            //    PointF iconLocation = new PointF(14, 13);
+            //    pdfDocument.Template.Top = header;
+            //    pageGraphics.DrawImage(image, new PointF(0, 0), iconSize);
+            //    stream.Dispose();
+
+            //    PdfPageTemplateElement footer = new PdfPageTemplateElement(bounds);
+            //    PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+            //    PdfBrush brush = new PdfSolidBrush(Color.Black);
+            //    PdfPageNumberField pageNumber = new PdfPageNumberField(font, brush);
+            //    PdfPageCountField counts = new PdfPageCountField(font, brush);
+            //    PdfCompositeField pageText = new PdfCompositeField(font, brush, "Page {0} of {1}", pageNumber, counts);
+            //    pageText.Bounds = footer.Bounds;
+            //    PdfCompositeField date = new PdfCompositeField(font, brush, $"Date : {DateTime.UtcNow.Date.ToString("dd/MM/yyyy")}");
+            //    date.Bounds = footer.Bounds;
+            //    PdfCompositeField copyRights = new PdfCompositeField(font, brush, $"©{DateTime.UtcNow.Year} Copyright Reserved by Einstein ll");
+            //    copyRights.Bounds = footer.Bounds;
+            //    pageText.Draw(footer.Graphics, new PointF(1035, 37));
+            //    date.Draw(footer.Graphics, new PointF(15, 37));
+            //    copyRights.Draw(footer.Graphics, new PointF(500, 37));
+            //    pdfDocument.Template.Bottom = footer;
+            //}
+            //if (pdfDocument.Pages.Count == 0)
+            //{
+            //    throw new InvalidOperationException("No pages available in the PDF document.");
+            //}
             pdfDocument.Save(memoryStream);
 
             return memoryStream.ToArray();
