@@ -167,6 +167,7 @@ class Program
 
             var summarydata = GetSummaryData();
             var summaryresult = summarydata.FirstOrDefault();
+
             PdfGrid summaryHeaderGrid = new PdfGrid();
             summaryHeaderGrid.Columns.Add(6);
             summaryHeaderGrid.Headers.Add(2);
@@ -208,11 +209,26 @@ class Program
 
             foreach (var summaryrowData in summarydata)
             {
+                bool isFirstRow;
                 
                 Dictionary<string, string> propertyValues = new Dictionary<string, string>();
-
-                foreach (var sumdata in summaryrowData.Items)
+                for (int i = 0; i < summaryrowData.Items.Count; i++)
                 {
+                    if (i == 0) isFirstRow = true;
+                    else isFirstRow = false;
+
+                    var sumdata = summaryrowData.Items[i];
+
+                    PdfStringFormat format = new PdfStringFormat();
+                    format.WordWrap = PdfWordWrapType.Word;
+
+                    PdfGridRow summaryrow = summaryHeaderGrid.Rows.Add();
+                    summaryrow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
+                    summaryrow.Style.BackgroundBrush = PdfBrushes.White;
+                    summaryrow.Cells[0].Value = isFirstRow ? summaryrowData.LocationName : string.Empty;
+                    summaryrow.Cells[0].StringFormat = format;
+                    summaryrow.Cells[0].Style.Borders.All = DARK_PEN;
+
                     Type types = sumdata.GetType();
                     PropertyInfo[] summaryProperties = types.GetProperties();
 
@@ -221,43 +237,23 @@ class Program
                         object value = property.GetValue(sumdata);
                         propertyValues[property.Name] = value?.ToString() ?? string.Empty;
                     }
-                    
-                }
-                foreach (var sumdata in summaryrowData.Items)
-                {
-                    PdfGridRow summaryrow = summaryHeaderGrid.Rows.Add();
-                    summaryrow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
-                    summaryrow.Style.BackgroundBrush = PdfBrushes.White;
-                    PdfStringFormat format = new PdfStringFormat();
-                    format.WordWrap = PdfWordWrapType.Word;
-                    summaryrow.Cells[0].Value = summaryrowData.LocationName;
-                    summaryrow.Cells[0].StringFormat = format;
-                    summaryrow.Cells[0].Style.Borders.All = DARK_PEN;
 
-                    for (int i = 1; i <= summaryrowinfo.Count; i++)
+                    for (int j = 1; j <= summaryrowinfo.Count; j++)
                     {
-                        string columnKey = summaryrowinfo[i - 1];// Adjust index since summaryrowinfo is 0-based
+                        string columnKey = summaryrowinfo[j - 1];// Adjust index since summaryrowinfo is 0-based
 
                         if (propertyValues.TryGetValue(columnKey, out string columnValue))
                         {
-                            summaryrow.Cells[i].Value = columnValue;
+                            summaryrow.Cells[j].Value = columnValue;
                         }
                         else if (columnKey == "Addl.Details")
                         {
-                            summaryrow.Cells[i].Value = $"{propertyValues["LocationIExternalId"]}-{propertyValues["DepartmentName"]}-{propertyValues["SkillGLNumber"]}";
+                            summaryrow.Cells[j].Value = $"{propertyValues["LocationIExternalId"]}-{propertyValues["DepartmentName"]}-{propertyValues["SkillGLNumber"]}";
                         }
 
-                        summaryrow.Cells[i].StringFormat = format;
-                        summaryrow.Cells[i].Style.Borders.All = DARK_PEN;
-                        ////if (summaryrowinfo.Count - 1 == i)
-                        ////{
-                        ////    summaryrow = summaryHeaderGrid.Rows.Add();
-                        ////}
+                        summaryrow.Cells[j].StringFormat = format;
+                        summaryrow.Cells[j].Style.Borders.All = DARK_PEN;
 
-                        //if(i == 5)
-                        //{
-                        //    break;
-                        //}
                     }
                 }
             }
@@ -265,42 +261,42 @@ class Program
             summaryHeaderGrid.Draw(pdfDocument.Pages[pdfDocument.Pages.Count - 1], new PointF(0, pdfGridLayoutResult.Bounds.Bottom + 40));
 
 
-            //foreach (PdfPage page in pdfDocument.Pages)
-            //{
-            //    PdfGraphics pageGraphics = page.Graphics;
+            foreach (PdfPage page in pdfDocument.Pages)
+            {
+                PdfGraphics pageGraphics = page.Graphics;
 
-            //    RectangleF bounds = new RectangleF(0, 0, page.GetClientSize().Width, 50);
-            //    PdfPageTemplateElement header = new PdfPageTemplateElement(bounds);
+                RectangleF bounds = new RectangleF(0, 0, page.GetClientSize().Width, 50);
+                PdfPageTemplateElement header = new PdfPageTemplateElement(bounds);
 
-            //    var stream = Logo();
-            //    PdfImage image = new PdfBitmap(stream);
+                var stream = Logo();
+                PdfImage image = new PdfBitmap(stream);
 
-            //    SizeF iconSize = new SizeF(120, 33);
-            //    PointF iconLocation = new PointF(14, 13);
-            //    pdfDocument.Template.Top = header;
-            //    pageGraphics.DrawImage(image, new PointF(0, 0), iconSize);
-            //    stream.Dispose();
+                SizeF iconSize = new SizeF(120, 33);
+                PointF iconLocation = new PointF(14, 13);
+                pdfDocument.Template.Top = header;
+                pageGraphics.DrawImage(image, new PointF(0, 0), iconSize);
+                stream.Dispose();
 
-            //    PdfPageTemplateElement footer = new PdfPageTemplateElement(bounds);
-            //    PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
-            //    PdfBrush brush = new PdfSolidBrush(Color.Black);
-            //    PdfPageNumberField pageNumber = new PdfPageNumberField(font, brush);
-            //    PdfPageCountField counts = new PdfPageCountField(font, brush);
-            //    PdfCompositeField pageText = new PdfCompositeField(font, brush, "Page {0} of {1}", pageNumber, counts);
-            //    pageText.Bounds = footer.Bounds;
-            //    PdfCompositeField date = new PdfCompositeField(font, brush, $"Date : {DateTime.UtcNow.Date.ToString("dd/MM/yyyy")}");
-            //    date.Bounds = footer.Bounds;
-            //    PdfCompositeField copyRights = new PdfCompositeField(font, brush, $"©{DateTime.UtcNow.Year} Copyright Reserved by Einstein ll");
-            //    copyRights.Bounds = footer.Bounds;
-            //    pageText.Draw(footer.Graphics, new PointF(1035, 37));
-            //    date.Draw(footer.Graphics, new PointF(15, 37));
-            //    copyRights.Draw(footer.Graphics, new PointF(500, 37));
-            //    pdfDocument.Template.Bottom = footer;
-            //}
-            //if (pdfDocument.Pages.Count == 0)
-            //{
-            //    throw new InvalidOperationException("No pages available in the PDF document.");
-            //}
+                PdfPageTemplateElement footer = new PdfPageTemplateElement(bounds);
+                PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+                PdfBrush brush = new PdfSolidBrush(Color.Black);
+                PdfPageNumberField pageNumber = new PdfPageNumberField(font, brush);
+                PdfPageCountField counts = new PdfPageCountField(font, brush);
+                PdfCompositeField pageText = new PdfCompositeField(font, brush, "Page {0} of {1}", pageNumber, counts);
+                pageText.Bounds = footer.Bounds;
+                PdfCompositeField date = new PdfCompositeField(font, brush, $"Date : {DateTime.UtcNow.Date.ToString("dd/MM/yyyy")}");
+                date.Bounds = footer.Bounds;
+                PdfCompositeField copyRights = new PdfCompositeField(font, brush, $"©{DateTime.UtcNow.Year} Copyright Reserved by Einstein ll");
+                copyRights.Bounds = footer.Bounds;
+                pageText.Draw(footer.Graphics, new PointF(1035, 37));
+                date.Draw(footer.Graphics, new PointF(15, 37));
+                copyRights.Draw(footer.Graphics, new PointF(500, 37));
+                pdfDocument.Template.Bottom = footer;
+            }
+            if (pdfDocument.Pages.Count == 0)
+            {
+                throw new InvalidOperationException("No pages available in the PDF document.");
+            }
             pdfDocument.Save(memoryStream);
 
             return memoryStream.ToArray();
@@ -1405,53 +1401,98 @@ class Program
     private static List<PrintGroupedSummaryDto> GetSummaryData()
     {
         return new List<PrintGroupedSummaryDto>
-    {
-        new PrintGroupedSummaryDto
         {
-            LocationName = "Cooley Dickinson VNA & Hospice (CDV)",
-            Items = new List<PrintInvoiceSummaryRecordDto>
+            new PrintGroupedSummaryDto
             {
-                new PrintInvoiceSummaryRecordDto
+                LocationName = "Cooley Dickinson VNA & Hospice (CDV)",
+                Items = new List<PrintInvoiceSummaryRecordDto>
                 {
-                    DepartmentName = "PS-VNANurseWeekend",
-                    ExtDepartmentId = "CDV032",
-                    LocationIExternalId = "1930",
-                    LocationInvoiceId = "1930",
-                    InvoiceDepartmentId = "CV9415",
-                    SkillGLNumber = "823901",
-                    SkillName = "RN Home Health",
-                    Value = 12,
-                    Total = 1260,
-                    CalculatedTotal = 1260,
-                    Fee = 0,
-                    FeeTotal = 0,
-                    Details = null,
-                    SalesTaxFee = 0,
-                    SalesTaxAmount = 0,
-                    TotalAmount = 1260
-                },
-                new PrintInvoiceSummaryRecordDto
+                    new PrintInvoiceSummaryRecordDto
+                    {
+                        DepartmentName = "PS-VNANurseWeekend",
+                        ExtDepartmentId = "CDV032",
+                        LocationIExternalId = "1930",
+                        LocationInvoiceId = "1930",
+                        InvoiceDepartmentId = "CV9415",
+                        SkillGLNumber = "823901",
+                        SkillName = "RN Home Health",
+                        Value = 12,
+                        Total = 1260,
+                        CalculatedTotal = 1260,
+                        Fee = 0,
+                        FeeTotal = 0,
+                        Details = null,
+                        SalesTaxFee = 0,
+                        SalesTaxAmount = 0,
+                        TotalAmount = 1260
+                    },
+                    new PrintInvoiceSummaryRecordDto
+                    {
+                        DepartmentName = "PS-VNANurseWeekend2",
+                        ExtDepartmentId = "452342",
+                        LocationIExternalId = "1930",
+                        LocationInvoiceId = "1930",
+                        InvoiceDepartmentId = "CV9415",
+                        SkillGLNumber = "423423",
+                        SkillName = "RN Home Health",
+                        Value = 34,
+                        Total = 3260,
+                        CalculatedTotal = 3260,
+                        Fee = 0,
+                        FeeTotal = 0,
+                        Details = null,
+                        SalesTaxFee = 0,
+                        SalesTaxAmount = 0,
+                        TotalAmount = 234
+                    }
+                }
+            },
+            new PrintGroupedSummaryDto
+            {
+                LocationName = "Cooley Dickinson VNA & Hospice (CDV)",
+                Items = new List<PrintInvoiceSummaryRecordDto>
                 {
-                    DepartmentName = "PS-VNANurseWeekend",
-                    ExtDepartmentId = "CDV032",
-                    LocationIExternalId = "1930",
-                    LocationInvoiceId = "1930",
-                    InvoiceDepartmentId = "CV9415",
-                    SkillGLNumber = "823901",
-                    SkillName = "RN Home Health",
-                    Value = 12,
-                    Total = 1260,
-                    CalculatedTotal = 1260,
-                    Fee = 0,
-                    FeeTotal = 0,
-                    Details = null,
-                    SalesTaxFee = 0,
-                    SalesTaxAmount = 0,
-                    TotalAmount = 1260
+                    new PrintInvoiceSummaryRecordDto
+                    {
+                        DepartmentName = "PS-VNANurseWeekend",
+                        ExtDepartmentId = "CDV032",
+                        LocationIExternalId = "1930",
+                        LocationInvoiceId = "1930",
+                        InvoiceDepartmentId = "CV9415",
+                        SkillGLNumber = "823901",
+                        SkillName = "RN Home Health",
+                        Value = 12,
+                        Total = 1260,
+                        CalculatedTotal = 1260,
+                        Fee = 0,
+                        FeeTotal = 0,
+                        Details = null,
+                        SalesTaxFee = 0,
+                        SalesTaxAmount = 0,
+                        TotalAmount = 1260
+                    },
+                    new PrintInvoiceSummaryRecordDto
+                    {
+                        DepartmentName = "PS-VNANurseWeekend2",
+                        ExtDepartmentId = "452342",
+                        LocationIExternalId = "1930",
+                        LocationInvoiceId = "1930",
+                        InvoiceDepartmentId = "CV9415",
+                        SkillGLNumber = "423423",
+                        SkillName = "RN Home Health",
+                        Value = 34,
+                        Total = 3260,
+                        CalculatedTotal = 3260,
+                        Fee = 0,
+                        FeeTotal = 0,
+                        Details = null,
+                        SalesTaxFee = 0,
+                        SalesTaxAmount = 0,
+                        TotalAmount = 234
+                    }
                 }
             }
-        }
-    };
+        };
     }
     static void SaveByteArrayToPdf(byte[] byteArray, string filePath)
     {
