@@ -1,4 +1,5 @@
-﻿using Syncfusion.Drawing;
+﻿using Microsoft.SqlServer.Server;
+using Syncfusion.Drawing;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Graphics;
 using Syncfusion.Pdf.Grid;
@@ -165,8 +166,8 @@ class Program
             var pdfGridLayoutResult = pdfGrid.Draw(currentPage, new PointF(0, 310), layoutFormat);
             pdfGrid.RepeatHeader = false;
 
-            var summarydata = GetSummaryData();
-            var summaryresult = summarydata.FirstOrDefault();
+            var summaryData = GetSummaryData();
+            var summaryresult = summaryData.FirstOrDefault();
 
             PdfGrid summaryHeaderGrid = new PdfGrid();
             summaryHeaderGrid.Columns.Add(6);
@@ -197,7 +198,7 @@ class Program
             }
             summaryHeaderGrid.Draw(pdfDocument.Pages[pdfDocument.Pages.Count - 1], new PointF(0, pdfGridLayoutResult.Bounds.Bottom + 40));
 
-            List<string> summaryrowinfo = new List<string>()
+            List<string> summaryRowInfo = new List<string>()
             {
                 "DepartmentName",
                 "SkillName",
@@ -206,60 +207,76 @@ class Program
                 "Addl.Details"
             };
 
+            PdfStringFormat format = new PdfStringFormat();
+            format.WordWrap = PdfWordWrapType.Word;
 
-            foreach (var summaryrowData in summarydata)
+            decimal hoursMilesTotal = 0;
+            decimal totalOfTotal = 0;
+
+            foreach (var summaryRowData in summaryData)
             {
                 bool isFirstRow;
                 
                 Dictionary<string, string> propertyValues = new Dictionary<string, string>();
-                for (int i = 0; i < summaryrowData.Items.Count; i++)
+                for (int i = 0; i < summaryRowData.Items.Count; i++)
                 {
                     if (i == 0) isFirstRow = true;
                     else isFirstRow = false;
 
-                    var sumdata = summaryrowData.Items[i];
+                    var sumData = summaryRowData.Items[i];
 
-                    PdfStringFormat format = new PdfStringFormat();
-                    format.WordWrap = PdfWordWrapType.Word;
+                    PdfGridRow summaryRow = summaryHeaderGrid.Rows.Add();
+                    summaryRow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
+                    summaryRow.Style.BackgroundBrush = PdfBrushes.White;
+                    summaryRow.Cells[0].Value = isFirstRow ? summaryRowData.LocationName : string.Empty;
+                    summaryRow.Cells[0].StringFormat = format;
+                    summaryRow.Cells[0].Style.Borders.All = DARK_PEN;
 
-                    PdfGridRow summaryrow = summaryHeaderGrid.Rows.Add();
-                    summaryrow.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Regular);
-                    summaryrow.Style.BackgroundBrush = PdfBrushes.White;
-                    summaryrow.Cells[0].Value = isFirstRow ? summaryrowData.LocationName : string.Empty;
-                    summaryrow.Cells[0].StringFormat = format;
-                    summaryrow.Cells[0].Style.Borders.All = DARK_PEN;
-
-                    Type types = sumdata.GetType();
+                    Type types = sumData.GetType();
                     PropertyInfo[] summaryProperties = types.GetProperties();
 
                     foreach (var property in summaryProperties)
                     {
-                        object value = property.GetValue(sumdata);
+                        object value = property.GetValue(sumData);
                         propertyValues[property.Name] = value?.ToString() ?? string.Empty;
                     }
 
-                    for (int j = 1; j <= summaryrowinfo.Count; j++)
+                    for (int j = 1; j <= summaryRowInfo.Count; j++)
                     {
-                        string columnKey = summaryrowinfo[j - 1];// Adjust index since summaryrowinfo is 0-based
+                        string columnKey = summaryRowInfo[j - 1];// Adjust index since summaryrowinfo is 0-based
 
                         if (propertyValues.TryGetValue(columnKey, out string columnValue))
                         {
-                            summaryrow.Cells[j].Value = columnValue;
+                            summaryRow.Cells[j].Value = columnValue;
+
+                            if (columnKey == "Value")
+                                hoursMilesTotal += decimal.Parse(columnValue);
+                            else if (columnKey == "TotalAmount")
+                                totalOfTotal += decimal.Parse(columnValue);
                         }
                         else if (columnKey == "Addl.Details")
                         {
-                            summaryrow.Cells[j].Value = $"{propertyValues["LocationIExternalId"]}-{propertyValues["DepartmentName"]}-{propertyValues["SkillGLNumber"]}";
+                            summaryRow.Cells[j].Value = $"{propertyValues["LocationIExternalId"]}-{propertyValues["DepartmentName"]}-{propertyValues["SkillGLNumber"]}";
                         }
 
-                        summaryrow.Cells[j].StringFormat = format;
-                        summaryrow.Cells[j].Style.Borders.All = DARK_PEN;
+                        summaryRow.Cells[j].StringFormat = format;
+                        summaryRow.Cells[j].Style.Borders.All = DARK_PEN;
 
                     }
                 }
             }
 
-            summaryHeaderGrid.Draw(pdfDocument.Pages[pdfDocument.Pages.Count - 1], new PointF(0, pdfGridLayoutResult.Bounds.Bottom + 40));
+            PdfGridRow summaryRowTotal = summaryHeaderGrid.Rows.Add();
+            summaryRowTotal.Style.Font = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.Bold);
+            summaryRowTotal.Style.BackgroundBrush = PdfBrushes.White;
+            summaryRowTotal.Cells[3].Value = $"{hoursMilesTotal}";
+            summaryRowTotal.Cells[3].StringFormat = format;
+            summaryRowTotal.Cells[3].Style.Borders.All = DARK_PEN;
+            summaryRowTotal.Cells[4].Value = $"{totalOfTotal}";
+            summaryRowTotal.Cells[4].StringFormat = format;
+            summaryRowTotal.Cells[4].Style.Borders.All = DARK_PEN;
 
+            summaryHeaderGrid.Draw(pdfDocument.Pages[pdfDocument.Pages.Count - 1], new PointF(0, pdfGridLayoutResult.Bounds.Bottom + 40));
 
             foreach (PdfPage page in pdfDocument.Pages)
             {
