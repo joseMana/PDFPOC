@@ -276,23 +276,27 @@ class Program
             summaryRowTotal.Cells[4].StringFormat = format;
             summaryRowTotal.Cells[4].Style.Borders.All = DARK_PEN;
 
+            var pageIndexOfSummary = pdfDocument.PageCount;
             summaryHeaderGrid.Draw(pdfDocument.Pages[pdfDocument.Pages.Count - 1], new PointF(0, pdfGridLayoutResult.Bounds.Bottom + 40));
 
-            foreach (PdfPage page in pdfDocument.Pages)
+            for (int i = 0; i < pdfDocument.Pages.Count; i++)
             {
+                PdfPage page = pdfDocument.Pages[i];
                 PdfGraphics pageGraphics = page.Graphics;
-
                 RectangleF bounds = new RectangleF(0, 0, page.GetClientSize().Width, 50);
                 PdfPageTemplateElement header = new PdfPageTemplateElement(bounds);
 
-                var stream = Logo();
-                PdfImage image = new PdfBitmap(stream);
+                if(i < pageIndexOfSummary)
+                {
+                    var stream = Logo();
+                    PdfImage image = new PdfBitmap(stream);
 
-                SizeF iconSize = new SizeF(120, 33);
-                PointF iconLocation = new PointF(14, 13);
-                pdfDocument.Template.Top = header;
-                pageGraphics.DrawImage(image, new PointF(0, 0), iconSize);
-                stream.Dispose();
+                    SizeF iconSize = new SizeF(120, 33);
+                    PointF iconLocation = new PointF(14, 13);
+                    pdfDocument.Template.Top = header;
+                    pageGraphics.DrawImage(image, new PointF(0, 0), iconSize);
+                    stream.Dispose();
+                }
 
                 PdfPageTemplateElement footer = new PdfPageTemplateElement(bounds);
                 PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
@@ -310,6 +314,7 @@ class Program
                 copyRights.Draw(footer.Graphics, new PointF(500, 37));
                 pdfDocument.Template.Bottom = footer;
             }
+
             if (pdfDocument.Pages.Count == 0)
             {
                 throw new InvalidOperationException("No pages available in the PDF document.");
